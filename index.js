@@ -6,7 +6,7 @@ async function sortHackerNewsArticles() {
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext();
   const page = await context.newPage();
- 
+  let articleCount=0
   let newestDate= 1827834361000
   let textDate = ""
 
@@ -24,6 +24,10 @@ async function sortHackerNewsArticles() {
     let subLines = await page.$$(".subText")
       
       for(let j = 0; j < subLines.length; j++){
+          articleCount++
+          if (articleCount > 100){
+            return true
+          }
           let sub = subLines[j]
           let ageElem = await sub.$(".age")
                    
@@ -41,7 +45,7 @@ async function sortHackerNewsArticles() {
             textDate = text
           }else{
             console.error("out of order", newestDate, unixTimeStamp , textDate , text)
-
+            await browser.close()
             return false 
           }
 
@@ -57,7 +61,7 @@ async function sortHackerNewsArticles() {
 
       await page.click(".morelink")
     }else{
-       i = 5
+       return true // break loop
     }
 
   }
@@ -66,5 +70,8 @@ async function sortHackerNewsArticles() {
 }
 
 (async () => {
-  await sortHackerNewsArticles();
+  const result = await sortHackerNewsArticles();
+  
+  console.log(`Evaluation completed. Articles in proper date order: ${result}`);
+
 })();
